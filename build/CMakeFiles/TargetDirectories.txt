@@ -1,0 +1,3 @@
+/Users/lukarajic/Parallel-Algorithm-Implementation/build/CMakeFiles/nbody.dir
+/Users/lukarajic/Parallel-Algorithm-Implementation/build/CMakeFiles/edit_cache.dir
+/Users/lukarajic/Parallel-Algorithm-Implementation/build/CMakeFiles/rebuild_cache.dir
