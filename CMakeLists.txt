@@ -15,4 +15,9 @@ add_executable(nbody src/main.cpp)
 
 target_include_directories(nbody PUBLIC include)
 
+# Optimization flags
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    target_compile_options(nbody PRIVATE -O3 -march=native)
+endif()
+
 target_link_libraries(nbody PUBLIC OpenMP::OpenMP_CXX)
