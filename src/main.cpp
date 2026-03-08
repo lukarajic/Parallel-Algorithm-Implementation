@@ -23,10 +23,11 @@ void compute_forces(std::vector<Body>& bodies, float dt) {
     const float G = 6.674e-11f; // Gravitational constant
     const float softening = 1e-9f; // To avoid division by zero
 
-    for (size_t i = 0; i < bodies.size(); ++i) {
+    #pragma omp parallel for
+    for (int i = 0; i < (int)bodies.size(); ++i) {
         Vector3 force = {0.0f, 0.0f, 0.0f};
         for (size_t j = 0; j < bodies.size(); ++j) {
-            if (i == j) continue;
+            if (i == (int)j) continue;
 
             Vector3 r = bodies[j].position - bodies[i].position;
             float dist_sq = r.x * r.x + r.y * r.y + r.z * r.z + softening;
@@ -41,8 +42,9 @@ void compute_forces(std::vector<Body>& bodies, float dt) {
     }
 
     // Update positions
-    for (auto& b : bodies) {
-        b.position += b.velocity * dt;
+    #pragma omp parallel for
+    for (int i = 0; i < (int)bodies.size(); ++i) {
+        bodies[i].position += bodies[i].velocity * dt;
     }
 }
 
