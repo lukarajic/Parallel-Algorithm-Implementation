@@ -49,7 +49,7 @@ void compute_forces(std::vector<Body>& bodies, float dt) {
 }
 
 int main() {
-    const int num_bodies = 1000;
+    const int num_bodies = 5000;
     const int num_steps = 10;
     const float dt = 0.01f;
 
