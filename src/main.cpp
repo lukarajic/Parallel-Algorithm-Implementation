@@ -5,46 +5,53 @@
 #include <chrono>
 #include "nbody.h"
 
-void init_bodies(std::vector<Body>& bodies, int n) {
+void init_system(System& system, int n) {
     std::mt19937 gen(42);
     std::uniform_real_distribution<float> pos_dist(-100.0f, 100.0f);
     std::uniform_real_distribution<float> mass_dist(1.0f, 10.0f);
 
     for (int i = 0; i < n; ++i) {
-        bodies[i] = {
-            {pos_dist(gen), pos_dist(gen), pos_dist(gen)},
-            {0.0f, 0.0f, 0.0f},
-            mass_dist(gen)
-        };
+        system.x[i] = pos_dist(gen);
+        system.y[i] = pos_dist(gen);
+        system.z[i] = pos_dist(gen);
+        system.vx[i] = 0.0f;
+        system.vy[i] = 0.0f;
+        system.vz[i] = 0.0f;
+        system.mass[i] = mass_dist(gen);
     }
 }
 
-void compute_forces(std::vector<Body>& bodies, float dt) {
-    const float G = 6.674e-11f; // Gravitational constant
-    const float softening = 1e-9f; // To avoid division by zero
+void compute_forces(System& system, int n, float dt) {
+    const float G = 6.674e-11f;
+    const float softening = 1e-9f;
 
     #pragma omp parallel for
-    for (int i = 0; i < (int)bodies.size(); ++i) {
-        Vector3 force = {0.0f, 0.0f, 0.0f};
-        for (size_t j = 0; j < bodies.size(); ++j) {
-            if (i == (int)j) continue;
+    for (int i = 0; i < n; ++i) {
+        float fx = 0.0f, fy = 0.0f, fz = 0.0f;
+        float xi = system.x[i], yi = system.y[i], zi = system.z[i], mi = system.mass[i];
 
-            Vector3 r = bodies[j].position - bodies[i].position;
-            float dist_sq = r.x * r.x + r.y * r.y + r.z * r.z + softening;
+        for (int j = 0; j < n; ++j) {
+            float dx = system.x[j] - xi;
+            float dy = system.y[j] - yi;
+            float dz = system.z[j] - zi;
+            float dist_sq = dx * dx + dy * dy + dz * dz + softening;
             float inv_dist = 1.0f / std::sqrt(dist_sq);
             float inv_dist3 = inv_dist * inv_dist * inv_dist;
-
-            float f = G * bodies[i].mass * bodies[j].mass * inv_dist3;
-            force += r * f;
+            float f = G * mi * system.mass[j] * inv_dist3;
+            fx += dx * f;
+            fy += dy * f;
+            fz += dz * f;
         }
-        // Update velocity: F = ma => a = F/m
-        bodies[i].velocity += force * (dt / bodies[i].mass);
+        system.vx[i] += fx * (dt / mi);
+        system.vy[i] += fy * (dt / mi);
+        system.vz[i] += fz * (dt / mi);
     }
 
-    // Update positions
     #pragma omp parallel for
-    for (int i = 0; i < (int)bodies.size(); ++i) {
-        bodies[i].position += bodies[i].velocity * dt;
+    for (int i = 0; i < n; ++i) {
+        system.x[i] += system.vx[i] * dt;
+        system.y[i] += system.vy[i] * dt;
+        system.z[i] += system.vz[i] * dt;
     }
 }
 
@@ -53,14 +60,14 @@ int main() {
     const int num_steps = 10;
     const float dt = 0.01f;
 
-    std::vector<Body> bodies(num_bodies);
-    init_bodies(bodies, num_bodies);
+    System system(num_bodies);
+    init_system(system, num_bodies);
 
-    std::cout << "Starting simulation with " << num_bodies << " bodies..." << std::endl;
+    std::cout << "Starting simulation with " << num_bodies << " bodies (SoA)..." << std::endl;
 
     auto start = std::chrono::high_resolution_clock::now();
     for (int step = 0; step < num_steps; ++step) {
-        compute_forces(bodies, dt);
+        compute_forces(system, num_bodies, dt);
     }
     auto end = std::chrono::high_resolution_clock::now();
 
