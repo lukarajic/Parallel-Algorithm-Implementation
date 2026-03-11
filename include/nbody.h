@@ -40,4 +40,12 @@ struct System {
     System(int n) : x(n), y(n), z(n), vx(n), vy(n), vz(n), mass(n) {}
 };
 
+struct Config {
+    int num_bodies;
+    int num_steps;
+    float dt;
+    float G;
+    float softening;
+};
+
 #endif // NBODY_H
