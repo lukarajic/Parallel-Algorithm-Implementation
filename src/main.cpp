@@ -1,11 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include <chrono>
 #include <iomanip>
 #include "nbody.h"
 #include "init.h"
 #include "utils.h"
+#include "timer.h"
 
 void compute_forces(System& system, const Config& config) {
     #pragma omp parallel for
@@ -57,19 +57,17 @@ int main() {
     double initial_pe = calculate_potential_energy(system, config);
     std::cout << "Initial Energy: Total=" << initial_ke + initial_pe << " KE=" << initial_ke << " PE=" << initial_pe << std::endl;
 
-    auto start = std::chrono::high_resolution_clock::now();
-    for (int step = 0; step < config.num_steps; ++step) {
-        compute_forces(system, config);
+    {
+        Timer timer("Total simulation");
+        for (int step = 0; step < config.num_steps; ++step) {
+            compute_forces(system, config);
+        }
     }
-    auto end = std::chrono::high_resolution_clock::now();
 
     double final_ke = calculate_kinetic_energy(system, config);
     double final_pe = calculate_potential_energy(system, config);
     std::cout << "Final Energy:   Total=" << final_ke + final_pe << " KE=" << final_ke << " PE=" << final_pe << std::endl;
     std::cout << "Energy Drift: " << (final_ke + final_pe) - (initial_ke + initial_pe) << std::endl;
-
-    std::chrono::duration<double> elapsed = end - start;
-    std::cout << "Simulation finished in " << elapsed.count() << " seconds." << std::endl;
 
     return 0;
 }
