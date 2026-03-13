@@ -11,17 +11,17 @@ void compute_forces(System& system, const Config& config) {
     #pragma omp parallel for
     for (int i = 0; i < config.num_bodies; ++i) {
         float fx = 0.0f, fy = 0.0f, fz = 0.0f;
-        float xi = system.x[i], yi = system.y[i], zi = system.z[i], mi = system.mass[i];
+        const float xi = system.x[i], yi = system.y[i], zi = system.z[i], mi = system.mass[i];
 
         #pragma omp simd reduction(+:fx, fy, fz)
         for (int j = 0; j < config.num_bodies; ++j) {
-            float dx = system.x[j] - xi;
-            float dy = system.y[j] - yi;
-            float dz = system.z[j] - zi;
-            float dist_sq = dx * dx + dy * dy + dz * dz + config.softening;
-            float inv_dist = 1.0f / std::sqrt(dist_sq);
-            float inv_dist3 = inv_dist * inv_dist * inv_dist;
-            float f = config.G * mi * system.mass[j] * inv_dist3;
+            const float dx = system.x[j] - xi;
+            const float dy = system.y[j] - yi;
+            const float dz = system.z[j] - zi;
+            const float dist_sq = dx * dx + dy * dy + dz * dz + config.softening;
+            const float inv_dist = 1.0f / std::sqrt(dist_sq);
+            const float inv_dist3 = inv_dist * inv_dist * inv_dist;
+            const float f = config.G * mi * system.mass[j] * inv_dist3;
             fx += dx * f;
             fy += dy * f;
             fz += dz * f;
