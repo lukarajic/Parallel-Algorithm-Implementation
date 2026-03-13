@@ -13,6 +13,7 @@ void compute_forces(System& system, const Config& config) {
         float fx = 0.0f, fy = 0.0f, fz = 0.0f;
         float xi = system.x[i], yi = system.y[i], zi = system.z[i], mi = system.mass[i];
 
+        #pragma omp simd reduction(+:fx, fy, fz)
         for (int j = 0; j < config.num_bodies; ++j) {
             float dx = system.x[j] - xi;
             float dy = system.y[j] - yi;
@@ -30,7 +31,7 @@ void compute_forces(System& system, const Config& config) {
         system.vz[i] += fz * (config.dt / mi);
     }
 
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (int i = 0; i < config.num_bodies; ++i) {
         system.x[i] += system.vx[i] * config.dt;
         system.y[i] += system.vy[i] * config.dt;
