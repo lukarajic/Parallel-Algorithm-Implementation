@@ -8,13 +8,14 @@
 #include "timer.h"
 
 void compute_forces(System& system, const Config& config) {
+    const size_t n = system.size();
     #pragma omp parallel for
-    for (int i = 0; i < config.num_bodies; ++i) {
+    for (int i = 0; i < (int)n; ++i) {
         float fx = 0.0f, fy = 0.0f, fz = 0.0f;
         const float xi = system.x[i], yi = system.y[i], zi = system.z[i], mi = system.mass[i];
 
         #pragma omp simd reduction(+:fx, fy, fz)
-        for (int j = 0; j < config.num_bodies; ++j) {
+        for (int j = 0; j < (int)n; ++j) {
             const float dx = system.x[j] - xi;
             const float dy = system.y[j] - yi;
             const float dz = system.z[j] - zi;
@@ -32,7 +33,7 @@ void compute_forces(System& system, const Config& config) {
     }
 
     #pragma omp parallel for simd
-    for (int i = 0; i < config.num_bodies; ++i) {
+    for (int i = 0; i < (int)n; ++i) {
         system.x[i] += system.vx[i] * config.dt;
         system.y[i] += system.vy[i] * config.dt;
         system.z[i] += system.vz[i] * config.dt;

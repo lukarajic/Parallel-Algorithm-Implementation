@@ -2,11 +2,12 @@
 #include "init.h"
 
 void init_system(System& system, const Config& config) {
+    const size_t n = system.size();
     std::mt19937 gen(42);
     std::uniform_real_distribution<float> pos_dist(-100.0f, 100.0f);
     std::uniform_real_distribution<float> mass_dist(1.0f, 10.0f);
 
-    for (int i = 0; i < config.num_bodies; ++i) {
+    for (int i = 0; i < (int)n; ++i) {
         system.x[i] = pos_dist(gen);
         system.y[i] = pos_dist(gen);
         system.z[i] = pos_dist(gen);

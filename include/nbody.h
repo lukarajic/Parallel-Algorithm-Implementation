@@ -38,6 +38,7 @@ struct System {
     std::vector<float> mass;
 
     System(int n) : x(n), y(n), z(n), vx(n), vy(n), vz(n), mass(n) {}
+    size_t size() const { return x.size(); }
 };
 
 struct Config {
