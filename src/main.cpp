@@ -12,13 +12,14 @@ void compute_forces(System& system, const Config& config) {
     #pragma omp parallel for
     for (int i = 0; i < (int)n; ++i) {
         float fx = 0.0f, fy = 0.0f, fz = 0.0f;
-        const float xi = system.x[i], yi = system.y[i], zi = system.z[i], mi = system.mass[i];
+        const Vector3 pos_i = system.get_pos(i);
+        const float mi = system.mass[i];
 
         #pragma omp simd reduction(+:fx, fy, fz)
         for (int j = 0; j < (int)n; ++j) {
-            const float dx = system.x[j] - xi;
-            const float dy = system.y[j] - yi;
-            const float dz = system.z[j] - zi;
+            const float dx = system.x[j] - pos_i.x;
+            const float dy = system.y[j] - pos_i.y;
+            const float dz = system.z[j] - pos_i.z;
             const float dist_sq = dx * dx + dy * dy + dz * dz + config.softening;
             const float inv_dist = 1.0f / std::sqrt(dist_sq);
             const float inv_dist3 = inv_dist * inv_dist * inv_dist;
@@ -27,9 +28,12 @@ void compute_forces(System& system, const Config& config) {
             fy += dy * f;
             fz += dz * f;
         }
-        system.vx[i] += fx * (config.dt / mi);
-        system.vy[i] += fy * (config.dt / mi);
-        system.vz[i] += fz * (config.dt / mi);
+        
+        Vector3 vel = system.get_vel(i);
+        vel.x += fx * (config.dt / mi);
+        vel.y += fy * (config.dt / mi);
+        vel.z += fz * (config.dt / mi);
+        system.set_vel(i, vel);
     }
 
     #pragma omp parallel for simd

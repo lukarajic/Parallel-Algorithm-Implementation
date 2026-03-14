@@ -2,9 +2,13 @@
 #define NBODY_H
 
 #include <vector>
+#include <cmath>
 
 struct Vector3 {
     float x, y, z;
+
+    Vector3() : x(0.0f), y(0.0f), z(0.0f) {}
+    Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
 
     Vector3 operator+(const Vector3& other) const {
         return {x + other.x, y + other.y, z + other.z};
@@ -24,6 +28,14 @@ struct Vector3 {
     Vector3 operator*(float scalar) const {
         return {x * scalar, y * scalar, z * scalar};
     }
+
+    float length_sq() const {
+        return x * x + y * y + z * z;
+    }
+
+    float length() const {
+        return std::sqrt(length_sq());
+    }
 };
 
 struct Body {
@@ -39,6 +51,12 @@ struct System {
 
     System(int n) : x(n), y(n), z(n), vx(n), vy(n), vz(n), mass(n) {}
     size_t size() const { return x.size(); }
+
+    Vector3 get_pos(size_t i) const { return {x[i], y[i], z[i]}; }
+    Vector3 get_vel(size_t i) const { return {vx[i], vy[i], vz[i]}; }
+    
+    void set_pos(size_t i, const Vector3& v) { x[i] = v.x; y[i] = v.y; z[i] = v.z; }
+    void set_vel(size_t i, const Vector3& v) { vx[i] = v.x; vy[i] = v.y; vz[i] = v.z; }
 };
 
 struct Config {
