@@ -67,6 +67,9 @@ int main() {
         Timer timer("Total simulation");
         for (int step = 0; step < config.num_steps; ++step) {
             compute_forces(system, config);
+            if ((step + 1) % 10 == 0 || step == 0 || step == config.num_steps - 1) {
+                std::cout << "Step " << std::setw(4) << step + 1 << " / " << config.num_steps << " completed." << std::endl;
+            }
         }
     }
 
