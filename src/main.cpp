@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <iomanip>
+#include <string>
 #include "nbody.h"
 #include "init.h"
 #include "utils.h"
@@ -17,16 +18,13 @@ void compute_forces(System& system, const Config& config) {
 
         #pragma omp simd reduction(+:fx, fy, fz)
         for (int j = 0; j < (int)n; ++j) {
-            const float dx = system.x[j] - pos_i.x;
-            const float dy = system.y[j] - pos_i.y;
-            const float dz = system.z[j] - pos_i.z;
             const float r2 = Vector3::dist_sq(pos_i.x, pos_i.y, pos_i.z, system.x[j], system.y[j], system.z[j]) + config.softening;
             const float inv_dist = 1.0f / std::sqrt(r2);
             const float inv_dist3 = inv_dist * inv_dist * inv_dist;
             const float f = config.G * mi * system.mass[j] * inv_dist3;
-            fx += dx * f;
-            fy += dy * f;
-            fz += dz * f;
+            fx += (system.x[j] - pos_i.x) * f;
+            fy += (system.y[j] - pos_i.y) * f;
+            fz += (system.z[j] - pos_i.z) * f;
         }
         
         Vector3 vel = system.get_vel(i);
@@ -44,7 +42,7 @@ void compute_forces(System& system, const Config& config) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     Config config = {
         10000,   // num_bodies
         100,     // num_steps
@@ -53,10 +51,22 @@ int main() {
         1e-9f    // softening
     };
 
+    if (argc > 1) {
+        config.num_bodies = std::stoi(argv[1]);
+    }
+    if (argc > 2) {
+        config.num_steps = std::stoi(argv[2]);
+    }
+
+    if (argc > 3 || (argc > 1 && std::string(argv[1]) == "--help")) {
+        std::cout << "Usage: " << argv[0] << " [num_bodies] [num_steps]" << std::endl;
+        return 0;
+    }
+
     System system(config.num_bodies);
     init_system(system, config);
 
-    std::cout << "Starting simulation with " << config.num_bodies << " bodies..." << std::endl;
+    std::cout << "Starting simulation with " << config.num_bodies << " bodies for " << config.num_steps << " steps..." << std::endl;
     std::cout << std::fixed << std::setprecision(10);
 
     double initial_ke = calculate_kinetic_energy(system, config);
