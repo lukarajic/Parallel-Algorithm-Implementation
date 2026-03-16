@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     System system(config.num_bodies);
     init_system(system, config);
 
-    std::cout << "Starting simulation with " << config.num_bodies << " bodies for " << config.num_steps << " steps..." << std::endl;
+    config.print();
     std::cout << std::fixed << std::setprecision(10);
 
     double initial_ke = calculate_kinetic_energy(system, config);

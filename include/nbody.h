@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <cmath>
+#include <iostream>
+#include <iomanip>
 
 struct Vector3 {
     float x, y, z;
@@ -72,6 +74,16 @@ struct Config {
     float dt;
     float G;
     float softening;
+
+    void print() const {
+        std::cout << "--- Simulation Configuration ---" << std::endl;
+        std::cout << "Bodies:     " << num_bodies << std::endl;
+        std::cout << "Steps:      " << num_steps << std::endl;
+        std::cout << "Time Step:  " << dt << std::endl;
+        std::cout << "G:          " << std::scientific << (double)G << std::endl;
+        std::cout << "Softening:  " << std::scientific << (double)softening << std::defaultfloat << std::endl;
+        std::cout << "---------------------------------" << std::endl;
+    }
 };
 
 #endif // NBODY_H
