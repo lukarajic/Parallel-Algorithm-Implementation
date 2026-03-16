@@ -20,8 +20,8 @@ void compute_forces(System& system, const Config& config) {
             const float dx = system.x[j] - pos_i.x;
             const float dy = system.y[j] - pos_i.y;
             const float dz = system.z[j] - pos_i.z;
-            const float dist_sq = dx * dx + dy * dy + dz * dz + config.softening;
-            const float inv_dist = 1.0f / std::sqrt(dist_sq);
+            const float r2 = Vector3::dist_sq(pos_i.x, pos_i.y, pos_i.z, system.x[j], system.y[j], system.z[j]) + config.softening;
+            const float inv_dist = 1.0f / std::sqrt(r2);
             const float inv_dist3 = inv_dist * inv_dist * inv_dist;
             const float f = config.G * mi * system.mass[j] * inv_dist3;
             fx += dx * f;

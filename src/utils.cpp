@@ -30,11 +30,8 @@ double calculate_potential_energy(const System& system, const Config& config) {
 
         #pragma omp simd reduction(+:sub_pe)
         for (int j = i + 1; j < (int)n; ++j) {
-            const double dx = system.x[j] - xi;
-            const double dy = system.y[j] - yi;
-            const double dz = system.z[j] - zi;
-            const double dist_sq = dx * dx + dy * dy + dz * dz + config.softening;
-            const double dist = std::sqrt(dist_sq);
+            const float r2 = Vector3::dist_sq(xi, yi, zi, system.x[j], system.y[j], system.z[j]) + config.softening;
+            const float dist = std::sqrt(r2);
             sub_pe -= (config.G * mi * system.mass[j]) / dist;
         }
         total_pe += sub_pe;
