@@ -51,11 +51,17 @@ int main(int argc, char* argv[]) {
         1e-9f    // softening
     };
 
-    if (argc > 1) {
-        config.num_bodies = std::stoi(argv[1]);
-    }
-    if (argc > 2) {
-        config.num_steps = std::stoi(argv[2]);
+    try {
+        if (argc > 1) {
+            config.num_bodies = std::stoi(argv[1]);
+        }
+        if (argc > 2) {
+            config.num_steps = std::stoi(argv[2]);
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error parsing command-line arguments: " << e.what() << std::endl;
+        std::cerr << "Usage: " << argv[0] << " [num_bodies] [num_steps]" << std::endl;
+        return 1;
     }
 
     if (argc > 3 || (argc > 1 && std::string(argv[1]) == "--help")) {
