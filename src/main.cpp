@@ -7,6 +7,7 @@
 #include "init.h"
 #include "utils.h"
 #include "timer.h"
+#include "logger.h"
 
 void compute_forces(System& system, const Config& config) {
     const size_t n = system.size();
@@ -51,27 +52,36 @@ int main(int argc, char* argv[]) {
         1e-9f    // softening
     };
 
+    bool verbose = false;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--verbose" || arg == "-v") {
+            verbose = true;
+            Logger::set_level(LogLevel::DEBUG);
+        }
+    }
+
     try {
-        if (argc > 1) {
+        if (argc > 1 && argv[1][0] != '-') {
             config.num_bodies = std::stoi(argv[1]);
         }
-        if (argc > 2) {
+        if (argc > 2 && argv[2][0] != '-') {
             config.num_steps = std::stoi(argv[2]);
         }
-        if (argc > 3) {
+        if (argc > 3 && argv[3][0] != '-') {
             config.dt = std::stof(argv[3]);
         }
-        if (argc > 4) {
+        if (argc > 4 && argv[4][0] != '-') {
             config.softening = std::stof(argv[4]);
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error parsing command-line arguments: " << e.what() << std::endl;
-        std::cerr << "Usage: " << argv[0] << " [num_bodies] [num_steps] [dt] [softening]" << std::endl;
+        Logger::error("Parsing command-line arguments: " + std::string(e.what()));
+        std::cerr << "Usage: " << argv[0] << " [num_bodies] [num_steps] [dt] [softening] [--verbose]" << std::endl;
         return 1;
     }
 
-    if (argc > 5 || (argc > 1 && std::string(argv[1]) == "--help")) {
-        std::cout << "Usage: " << argv[0] << " [num_bodies] [num_steps] [dt] [softening]" << std::endl;
+    if (argc > 1 && (std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h")) {
+        std::cout << "Usage: " << argv[0] << " [num_bodies] [num_steps] [dt] [softening] [--verbose]" << std::endl;
         return 0;
     }
 
@@ -87,22 +97,22 @@ int main(int argc, char* argv[]) {
 
     double initial_ke = calculate_kinetic_energy(system, config);
     double initial_pe = calculate_potential_energy(system, config);
-    std::cout << "Initial Energy: Total=" << initial_ke + initial_pe << " KE=" << initial_ke << " PE=" << initial_pe << std::endl;
+    Logger::info("Initial Energy: Total=" + std::to_string(initial_ke + initial_pe));
 
     {
         Timer timer("Total simulation");
         for (int step = 0; step < config.num_steps; ++step) {
             compute_forces(system, config);
             if ((step + 1) % 10 == 0 || step == 0 || step == config.num_steps - 1) {
-                std::cout << "Step " << std::setw(4) << step + 1 << " / " << config.num_steps << " completed." << std::endl;
+                Logger::debug("Step " + std::to_string(step + 1) + " / " + std::to_string(config.num_steps) + " completed.");
             }
         }
     }
 
     double final_ke = calculate_kinetic_energy(system, config);
     double final_pe = calculate_potential_energy(system, config);
-    std::cout << "Final Energy:   Total=" << final_ke + final_pe << " KE=" << final_ke << " PE=" << final_pe << std::endl;
-    std::cout << "Energy Drift: " << (final_ke + final_pe) - (initial_ke + initial_pe) << std::endl;
+    Logger::info("Final Energy:   Total=" + std::to_string(final_ke + final_pe));
+    Logger::info("Energy Drift: " + std::to_string((final_ke + final_pe) - (initial_ke + initial_pe)));
 
     return 0;
 }
