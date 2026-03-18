@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iomanip>
 #include <string>
+#include <chrono>
 #include "nbody.h"
 #include "init.h"
 #include "utils.h"
@@ -99,20 +100,26 @@ int main(int argc, char* argv[]) {
     double initial_pe = calculate_potential_energy(system, config);
     Logger::info("Initial Energy: Total=" + std::to_string(initial_ke + initial_pe));
 
+    double elapsed_seconds = 0.0;
     {
-        Timer timer("Total simulation");
+        auto start = std::chrono::high_resolution_clock::now();
         for (int step = 0; step < config.num_steps; ++step) {
             compute_forces(system, config);
             if ((step + 1) % 10 == 0 || step == 0 || step == config.num_steps - 1) {
                 Logger::debug("Step " + std::to_string(step + 1) + " / " + std::to_string(config.num_steps) + " completed.");
             }
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        elapsed_seconds = elapsed.count();
     }
 
     double final_ke = calculate_kinetic_energy(system, config);
     double final_pe = calculate_potential_energy(system, config);
     Logger::info("Final Energy:   Total=" + std::to_string(final_ke + final_pe));
     Logger::info("Energy Drift: " + std::to_string((final_ke + final_pe) - (initial_ke + initial_pe)));
+
+    config.summary(elapsed_seconds);
 
     return 0;
 }

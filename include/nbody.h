@@ -100,6 +100,18 @@ struct Config {
         }
         return true;
     }
+
+    void summary(double elapsed_seconds) const {
+        std::cout << "--- Simulation Summary ---" << std::endl;
+        std::cout << "Bodies:      " << num_bodies << std::endl;
+        std::cout << "Steps:       " << num_steps << std::endl;
+        std::cout << "Total Time:  " << elapsed_seconds << " s" << std::endl;
+        if (elapsed_seconds > 0) {
+            double interactions = (double)num_bodies * num_bodies * num_steps;
+            std::cout << "Performance: " << (interactions / elapsed_seconds) / 1e6 << " million interactions/s" << std::endl;
+        }
+        std::cout << "--------------------------" << std::endl;
+    }
 };
 
 #endif // NBODY_H
