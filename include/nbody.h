@@ -84,6 +84,22 @@ struct Config {
         std::cout << "Softening:  " << std::scientific << (double)softening << std::defaultfloat << std::endl;
         std::cout << "---------------------------------" << std::endl;
     }
+
+    bool validate() const {
+        if (num_bodies <= 0) {
+            std::cerr << "Error: Number of bodies must be positive." << std::endl;
+            return false;
+        }
+        if (num_steps <= 0) {
+            std::cerr << "Error: Number of steps must be positive." << std::endl;
+            return false;
+        }
+        if (dt <= 0.0f) {
+            std::cerr << "Error: Time step must be positive." << std::endl;
+            return false;
+        }
+        return true;
+    }
 };
 
 #endif // NBODY_H

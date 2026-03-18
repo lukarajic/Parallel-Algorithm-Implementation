@@ -75,6 +75,10 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    if (!config.validate()) {
+        return 1;
+    }
+
     System system(config.num_bodies);
     init_system(system, config);
 
