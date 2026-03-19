@@ -21,3 +21,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 endif()
 
 target_link_libraries(nbody PUBLIC OpenMP::OpenMP_CXX)
+
+# Testing
+enable_testing()
+add_executable(test_nbody tests/test_nbody.cpp)
+target_include_directories(test_nbody PUBLIC include)
+add_test(NAME test_nbody COMMAND test_nbody)
