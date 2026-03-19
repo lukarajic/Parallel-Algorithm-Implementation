@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "timer.h"
 #include "logger.h"
+#include "constants.h"
 
 void compute_forces(System& system, const Config& config) {
     const size_t n = system.size();
@@ -46,11 +47,11 @@ void compute_forces(System& system, const Config& config) {
 
 int main(int argc, char* argv[]) {
     Config config = {
-        10000,   // num_bodies
-        100,     // num_steps
-        0.01f,   // dt
-        6.674e-11f, // G
-        1e-9f    // softening
+        10000,                      // num_bodies
+        100,                        // num_steps
+        Constants::DEFAULT_DT,      // dt
+        Constants::G,               // G
+        Constants::DEFAULT_SOFTENING // softening
     };
 
     bool verbose = false;
