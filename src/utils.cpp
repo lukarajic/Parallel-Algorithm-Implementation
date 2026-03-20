@@ -39,3 +39,15 @@ double calculate_potential_energy(const System& system, const Config& config) {
 
     return total_pe;
 }
+
+double calculate_total_mass(const System& system) {
+    double total_mass = 0.0;
+    const size_t n = system.size();
+
+    #pragma omp parallel for reduction(+:total_mass)
+    for (int i = 0; i < (int)n; ++i) {
+        total_mass += system.mass[i];
+    }
+
+    return total_mass;
+}

@@ -100,6 +100,7 @@ int main(int argc, char* argv[]) {
     double initial_ke = calculate_kinetic_energy(system, config);
     double initial_pe = calculate_potential_energy(system, config);
     Logger::info("Initial Energy: Total=" + std::to_string(initial_ke + initial_pe));
+    Logger::info("Total System Mass: " + std::to_string(calculate_total_mass(system)));
 
     double elapsed_seconds = 0.0;
     {
