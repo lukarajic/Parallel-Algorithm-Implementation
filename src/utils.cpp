@@ -71,3 +71,18 @@ Vector3 calculate_center_of_mass(const System& system) {
     }
     return Vector3(0.0f, 0.0f, 0.0f);
 }
+
+Vector3 calculate_total_momentum(const System& system) {
+    double px = 0.0, py = 0.0, pz = 0.0;
+    const size_t n = system.size();
+
+    #pragma omp parallel for reduction(+:px, py, pz)
+    for (int i = 0; i < (int)n; ++i) {
+        const double m = system.mass[i];
+        px += system.vx[i] * m;
+        py += system.vy[i] * m;
+        pz += system.vz[i] * m;
+    }
+
+    return Vector3((float)px, (float)py, (float)pz);
+}

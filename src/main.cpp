@@ -104,6 +104,9 @@ int main(int argc, char* argv[]) {
     
     Vector3 initial_cm = calculate_center_of_mass(system);
     Logger::info("Initial CM: (" + std::to_string(initial_cm.x) + ", " + std::to_string(initial_cm.y) + ", " + std::to_string(initial_cm.z) + ")");
+    
+    Vector3 initial_p = calculate_total_momentum(system);
+    Logger::info("Initial Momentum: (" + std::to_string(initial_p.x) + ", " + std::to_string(initial_p.y) + ", " + std::to_string(initial_p.z) + ")");
 
     double elapsed_seconds = 0.0;
     {
@@ -126,6 +129,9 @@ int main(int argc, char* argv[]) {
 
     Vector3 final_cm = calculate_center_of_mass(system);
     Logger::info("Final CM:   (" + std::to_string(final_cm.x) + ", " + std::to_string(final_cm.y) + ", " + std::to_string(final_cm.z) + ")");
+
+    Vector3 final_p = calculate_total_momentum(system);
+    Logger::info("Final Momentum:   (" + std::to_string(final_p.x) + ", " + std::to_string(final_p.y) + ", " + std::to_string(final_p.z) + ")");
 
     config.summary(elapsed_seconds);
 
