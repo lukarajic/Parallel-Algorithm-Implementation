@@ -51,3 +51,23 @@ double calculate_total_mass(const System& system) {
 
     return total_mass;
 }
+
+Vector3 calculate_center_of_mass(const System& system) {
+    double cm_x = 0.0, cm_y = 0.0, cm_z = 0.0;
+    double total_mass = 0.0;
+    const size_t n = system.size();
+
+    #pragma omp parallel for reduction(+:cm_x, cm_y, cm_z, total_mass)
+    for (int i = 0; i < (int)n; ++i) {
+        const double m = system.mass[i];
+        cm_x += system.x[i] * m;
+        cm_y += system.y[i] * m;
+        cm_z += system.z[i] * m;
+        total_mass += m;
+    }
+
+    if (total_mass > 0) {
+        return Vector3((float)(cm_x / total_mass), (float)(cm_y / total_mass), (float)(cm_z / total_mass));
+    }
+    return Vector3(0.0f, 0.0f, 0.0f);
+}
