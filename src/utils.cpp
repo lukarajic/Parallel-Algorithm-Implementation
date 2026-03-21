@@ -86,3 +86,26 @@ Vector3 calculate_total_momentum(const System& system) {
 
     return Vector3((float)px, (float)py, (float)pz);
 }
+
+Vector3 calculate_total_angular_momentum(const System& system) {
+    double lx = 0.0, ly = 0.0, lz = 0.0;
+    const size_t n = system.size();
+
+    #pragma omp parallel for reduction(+:lx, ly, lz)
+    for (int i = 0; i < (int)n; ++i) {
+        const double m = system.mass[i];
+        const double rx = system.x[i];
+        const double ry = system.y[i];
+        const double rz = system.z[i];
+        const double vx = system.vx[i];
+        const double vy = system.vy[i];
+        const double vz = system.vz[i];
+
+        // L = r x p = m * (r x v)
+        lx += m * (ry * vz - rz * vy);
+        ly += m * (rz * vx - rx * vz);
+        lz += m * (rx * vy - ry * vx);
+    }
+
+    return Vector3((float)lx, (float)ly, (float)lz);
+}

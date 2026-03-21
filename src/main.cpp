@@ -108,6 +108,9 @@ int main(int argc, char* argv[]) {
     Vector3 initial_p = calculate_total_momentum(system);
     Logger::info("Initial Momentum: (" + std::to_string(initial_p.x) + ", " + std::to_string(initial_p.y) + ", " + std::to_string(initial_p.z) + ")");
 
+    Vector3 initial_l = calculate_total_angular_momentum(system);
+    Logger::info("Initial Angular Momentum: (" + std::to_string(initial_l.x) + ", " + std::to_string(initial_l.y) + ", " + std::to_string(initial_l.z) + ")");
+
     double elapsed_seconds = 0.0;
     {
         auto start = std::chrono::high_resolution_clock::now();
@@ -132,6 +135,9 @@ int main(int argc, char* argv[]) {
 
     Vector3 final_p = calculate_total_momentum(system);
     Logger::info("Final Momentum:   (" + std::to_string(final_p.x) + ", " + std::to_string(final_p.y) + ", " + std::to_string(final_p.z) + ")");
+
+    Vector3 final_l = calculate_total_angular_momentum(system);
+    Logger::info("Final Angular Momentum:   (" + std::to_string(final_l.x) + ", " + std::to_string(final_l.y) + ", " + std::to_string(final_l.z) + ")");
 
     config.summary(elapsed_seconds);
 

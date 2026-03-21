@@ -8,5 +8,6 @@ double calculate_potential_energy(const System& system, const Config& config);
 double calculate_total_mass(const System& system);
 Vector3 calculate_center_of_mass(const System& system);
 Vector3 calculate_total_momentum(const System& system);
+Vector3 calculate_total_angular_momentum(const System& system);
 
 #endif // UTILS_H
