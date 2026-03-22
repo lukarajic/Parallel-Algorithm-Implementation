@@ -1,5 +1,6 @@
 #include <cmath>
 #include <omp.h>
+#include <limits>
 #include "utils.h"
 
 double calculate_kinetic_energy(const System& system, const Config& config) {
@@ -101,11 +102,32 @@ Vector3 calculate_total_angular_momentum(const System& system) {
         const double vy = system.vy[i];
         const double vz = system.vz[i];
 
-        // L = r x p = m * (r x v)
         lx += m * (ry * vz - rz * vy);
         ly += m * (rz * vx - rx * vz);
         lz += m * (rx * vy - ry * vx);
     }
 
     return Vector3((float)lx, (float)ly, (float)lz);
+}
+
+BoundingBox calculate_bounding_box(const System& system) {
+    float min_x = std::numeric_limits<float>::max();
+    float min_y = std::numeric_limits<float>::max();
+    float min_z = std::numeric_limits<float>::max();
+    float max_x = std::numeric_limits<float>::lowest();
+    float max_y = std::numeric_limits<float>::lowest();
+    float max_z = std::numeric_limits<float>::lowest();
+    const size_t n = system.size();
+
+    #pragma omp parallel for reduction(min:min_x, min_y, min_z) reduction(max:max_x, max_y, max_z)
+    for (int i = 0; i < (int)n; ++i) {
+        if (system.x[i] < min_x) min_x = system.x[i];
+        if (system.y[i] < min_y) min_y = system.y[i];
+        if (system.z[i] < min_z) min_z = system.z[i];
+        if (system.x[i] > max_x) max_x = system.x[i];
+        if (system.y[i] > max_y) max_y = system.y[i];
+        if (system.z[i] > max_z) max_z = system.z[i];
+    }
+
+    return {{min_x, min_y, min_z}, {max_x, max_y, max_z}};
 }

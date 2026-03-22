@@ -61,6 +61,11 @@ struct Body {
     float mass;
 };
 
+struct BoundingBox {
+    Vector3 min;
+    Vector3 max;
+};
+
 struct System {
     std::vector<float> x, y, z;
     std::vector<float> vx, vy, vz;

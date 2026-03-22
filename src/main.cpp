@@ -111,6 +111,9 @@ int main(int argc, char* argv[]) {
     Vector3 initial_l = calculate_total_angular_momentum(system);
     Logger::info("Initial Angular Momentum: (" + std::to_string(initial_l.x) + ", " + std::to_string(initial_l.y) + ", " + std::to_string(initial_l.z) + ")");
 
+    BoundingBox initial_bb = calculate_bounding_box(system);
+    Logger::info("Initial Extent: Min(" + std::to_string(initial_bb.min.x) + ", " + std::to_string(initial_bb.min.y) + ", " + std::to_string(initial_bb.min.z) + ") Max(" + std::to_string(initial_bb.max.x) + ", " + std::to_string(initial_bb.max.y) + ", " + std::to_string(initial_bb.max.z) + ")");
+
     double elapsed_seconds = 0.0;
     {
         auto start = std::chrono::high_resolution_clock::now();
@@ -138,6 +141,9 @@ int main(int argc, char* argv[]) {
 
     Vector3 final_l = calculate_total_angular_momentum(system);
     Logger::info("Final Angular Momentum:   (" + std::to_string(final_l.x) + ", " + std::to_string(final_l.y) + ", " + std::to_string(final_l.z) + ")");
+
+    BoundingBox final_bb = calculate_bounding_box(system);
+    Logger::info("Final Extent:   Min(" + std::to_string(final_bb.min.x) + ", " + std::to_string(final_bb.min.y) + ", " + std::to_string(final_bb.min.z) + ") Max(" + std::to_string(final_bb.max.x) + ", " + std::to_string(final_bb.max.y) + ", " + std::to_string(final_bb.max.z) + ")");
 
     config.summary(elapsed_seconds);
 
