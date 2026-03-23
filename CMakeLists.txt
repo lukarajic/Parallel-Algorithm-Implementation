@@ -24,6 +24,7 @@ target_link_libraries(nbody PUBLIC OpenMP::OpenMP_CXX)
 
 # Testing
 enable_testing()
-add_executable(test_nbody tests/test_nbody.cpp)
+add_executable(test_nbody tests/test_nbody.cpp src/utils.cpp)
 target_include_directories(test_nbody PUBLIC include)
+target_link_libraries(test_nbody PUBLIC OpenMP::OpenMP_CXX)
 add_test(NAME test_nbody COMMAND test_nbody)
