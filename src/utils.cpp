@@ -41,6 +41,25 @@ double calculate_potential_energy(const System& system, const Config& config) {
     return total_pe;
 }
 
+void calculate_potential_energy_per_particle(System& system, const Config& config) {
+    const size_t n = system.size();
+
+    #pragma omp parallel for
+    for (int i = 0; i < (int)n; ++i) {
+        const double xi = system.x[i], yi = system.y[i], zi = system.z[i];
+        const double mi = system.mass[i];
+        double pe = 0.0;
+
+        for (int j = 0; j < (int)n; ++j) {
+            if (i == j) continue;
+            const float r2 = Vector3::dist_sq(xi, yi, zi, system.x[j], system.y[j], system.z[j]) + config.softening;
+            const float dist = std::sqrt(r2);
+            pe -= (config.G * mi * system.mass[j]) / dist;
+        }
+        system.potential_energy[i] = (float)pe;
+    }
+}
+
 double calculate_total_mass(const System& system) {
     double total_mass = 0.0;
     const size_t n = system.size();

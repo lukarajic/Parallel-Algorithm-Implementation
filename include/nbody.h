@@ -70,8 +70,9 @@ struct System {
     std::vector<float> x, y, z;
     std::vector<float> vx, vy, vz;
     std::vector<float> mass;
+    std::vector<float> potential_energy;
 
-    System(int n) : x(n), y(n), z(n), vx(n), vy(n), vz(n), mass(n) {}
+    System(int n) : x(n), y(n), z(n), vx(n), vy(n), vz(n), mass(n), potential_energy(n) {}
     size_t size() const { return x.size(); }
 
     Vector3 get_pos(size_t i) const { return {x[i], y[i], z[i]}; }

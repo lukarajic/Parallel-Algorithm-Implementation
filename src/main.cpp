@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <string>
 #include <chrono>
+#include <algorithm>
 #include "nbody.h"
 #include "init.h"
 #include "utils.h"
@@ -43,6 +44,12 @@ void compute_forces(System& system, const Config& config) {
         system.y[i] += system.vy[i] * config.dt;
         system.z[i] += system.vz[i] * config.dt;
     }
+}
+
+void report_min_pe(const System& system) {
+    auto it = std::min_element(system.potential_energy.begin(), system.potential_energy.end());
+    size_t idx = std::distance(system.potential_energy.begin(), it);
+    Logger::info("Min Potential Energy: " + std::to_string(*it) + " at index " + std::to_string(idx));
 }
 
 int main(int argc, char* argv[]) {
@@ -114,6 +121,9 @@ int main(int argc, char* argv[]) {
     BoundingBox initial_bb = calculate_bounding_box(system);
     Logger::info("Initial Extent: Min(" + std::to_string(initial_bb.min.x) + ", " + std::to_string(initial_bb.min.y) + ", " + std::to_string(initial_bb.min.z) + ") Max(" + std::to_string(initial_bb.max.x) + ", " + std::to_string(initial_bb.max.y) + ", " + std::to_string(initial_bb.max.z) + ")");
 
+    calculate_potential_energy_per_particle(system, config);
+    report_min_pe(system);
+
     double elapsed_seconds = 0.0;
     {
         auto start = std::chrono::high_resolution_clock::now();
@@ -144,6 +154,9 @@ int main(int argc, char* argv[]) {
 
     BoundingBox final_bb = calculate_bounding_box(system);
     Logger::info("Final Extent:   Min(" + std::to_string(final_bb.min.x) + ", " + std::to_string(final_bb.min.y) + ", " + std::to_string(final_bb.min.z) + ") Max(" + std::to_string(final_bb.max.x) + ", " + std::to_string(final_bb.max.y) + ", " + std::to_string(final_bb.max.z) + ")");
+
+    calculate_potential_energy_per_particle(system, config);
+    report_min_pe(system);
 
     config.summary(elapsed_seconds);
 
