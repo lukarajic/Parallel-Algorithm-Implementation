@@ -64,6 +64,39 @@ struct Body {
 struct BoundingBox {
     Vector3 min;
     Vector3 max;
+
+    Vector3 center() const {
+        return (min + max) * 0.5f;
+    }
+};
+
+struct OctreeNode {
+    BoundingBox boundary;
+    float total_mass;
+    Vector3 center_of_mass;
+    
+    // Index of the particle if this is a leaf node, -1 otherwise
+    int particle_idx;
+    
+    // Pointers to the 8 children (octants)
+    OctreeNode* children[8];
+
+    OctreeNode(const BoundingBox& box) : boundary(box), total_mass(0.0f), center_of_mass(0.0f, 0.0f, 0.0f), particle_idx(-1) {
+        for (int i = 0; i < 8; ++i) children[i] = nullptr;
+    }
+
+    ~OctreeNode() {
+        for (int i = 0; i < 8; ++i) {
+            if (children[i]) delete children[i];
+        }
+    }
+
+    bool is_leaf() const {
+        for (int i = 0; i < 8; ++i) {
+            if (children[i]) return false;
+        }
+        return true;
+    }
 };
 
 struct System {
