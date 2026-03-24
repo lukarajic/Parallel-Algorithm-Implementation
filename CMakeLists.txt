@@ -11,7 +11,7 @@ if(APPLE)
 endif()
 find_package(OpenMP REQUIRED)
 
-add_executable(nbody src/main.cpp src/init.cpp src/utils.cpp)
+add_executable(nbody src/main.cpp src/init.cpp src/utils.cpp src/nbody.cpp)
 
 target_include_directories(nbody PUBLIC include)
 

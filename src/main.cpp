@@ -12,7 +12,7 @@
 #include "logger.h"
 #include "constants.h"
 
-void compute_forces(System& system, const Config& config) {
+void compute_forces_direct(System& system, const Config& config) {
     const size_t n = system.size();
     #pragma omp parallel for
     for (int i = 0; i < (int)n; ++i) {
@@ -37,7 +37,43 @@ void compute_forces(System& system, const Config& config) {
         vel.z += fz * (config.dt / mi);
         system.set_vel(i, vel);
     }
+}
 
+void compute_forces_barnes_hut(System& system, const Config& config) {
+    BoundingBox boundary = calculate_bounding_box(system);
+    // Slightly expand boundary to ensure all particles are strictly inside
+    boundary.min = boundary.min - Vector3(0.1f, 0.1f, 0.1f);
+    boundary.max = boundary.max + Vector3(0.1f, 0.1f, 0.1f);
+
+    OctreeNode* root = new OctreeNode(boundary);
+    const size_t n = system.size();
+    for (int i = 0; i < (int)n; ++i) {
+        root->insert(i, system);
+    }
+    root->update_properties(system);
+
+    #pragma omp parallel for
+    for (int i = 0; i < (int)n; ++i) {
+        Vector3 force = root->compute_force(i, system, config.G, config.softening, config.theta);
+        const float mi = system.mass[i];
+        Vector3 vel = system.get_vel(i);
+        vel.x += force.x * (config.dt / mi);
+        vel.y += force.y * (config.dt / mi);
+        vel.z += force.z * (config.dt / mi);
+        system.set_vel(i, vel);
+    }
+
+    delete root;
+}
+
+void compute_forces(System& system, const Config& config) {
+    if (config.use_barnes_hut) {
+        compute_forces_barnes_hut(system, config);
+    } else {
+        compute_forces_direct(system, config);
+    }
+
+    const size_t n = system.size();
     #pragma omp parallel for simd
     for (int i = 0; i < (int)n; ++i) {
         system.x[i] += system.vx[i] * config.dt;
@@ -58,15 +94,19 @@ int main(int argc, char* argv[]) {
         100,                        // num_steps
         Constants::DEFAULT_DT,      // dt
         Constants::G,               // G
-        Constants::DEFAULT_SOFTENING // softening
+        Constants::DEFAULT_SOFTENING, // softening
+        0.5f,                       // theta
+        false                       // use_barnes_hut
     };
 
-    bool verbose = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--verbose" || arg == "-v") {
-            verbose = true;
             Logger::set_level(LogLevel::DEBUG);
+        } else if (arg == "--barnes-hut" || arg == "-bh") {
+            config.use_barnes_hut = true;
+        } else if (arg == "--theta" && i + 1 < argc) {
+            config.theta = std::stof(argv[++i]);
         }
     }
 
@@ -77,20 +117,13 @@ int main(int argc, char* argv[]) {
         if (argc > 2 && argv[2][0] != '-') {
             config.num_steps = std::stoi(argv[2]);
         }
-        if (argc > 3 && argv[3][0] != '-') {
-            config.dt = std::stof(argv[3]);
-        }
-        if (argc > 4 && argv[4][0] != '-') {
-            config.softening = std::stof(argv[4]);
-        }
     } catch (const std::exception& e) {
         Logger::error("Parsing command-line arguments: " + std::string(e.what()));
-        std::cerr << "Usage: " << argv[0] << " [num_bodies] [num_steps] [dt] [softening] [--verbose]" << std::endl;
         return 1;
     }
 
     if (argc > 1 && (std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h")) {
-        std::cout << "Usage: " << argv[0] << " [num_bodies] [num_steps] [dt] [softening] [--verbose]" << std::endl;
+        std::cout << "Usage: " << argv[0] << " [num_bodies] [num_steps] [--barnes-hut] [--theta T] [--verbose]" << std::endl;
         return 0;
     }
 
@@ -107,22 +140,9 @@ int main(int argc, char* argv[]) {
     double initial_ke = calculate_kinetic_energy(system, config);
     double initial_pe = calculate_potential_energy(system, config);
     Logger::info("Initial Energy: Total=" + std::to_string(initial_ke + initial_pe));
-    Logger::info("Total System Mass: " + std::to_string(calculate_total_mass(system)));
     
     Vector3 initial_cm = calculate_center_of_mass(system);
     Logger::info("Initial CM: (" + std::to_string(initial_cm.x) + ", " + std::to_string(initial_cm.y) + ", " + std::to_string(initial_cm.z) + ")");
-    
-    Vector3 initial_p = calculate_total_momentum(system);
-    Logger::info("Initial Momentum: (" + std::to_string(initial_p.x) + ", " + std::to_string(initial_p.y) + ", " + std::to_string(initial_p.z) + ")");
-
-    Vector3 initial_l = calculate_total_angular_momentum(system);
-    Logger::info("Initial Angular Momentum: (" + std::to_string(initial_l.x) + ", " + std::to_string(initial_l.y) + ", " + std::to_string(initial_l.z) + ")");
-
-    BoundingBox initial_bb = calculate_bounding_box(system);
-    Logger::info("Initial Extent: Min(" + std::to_string(initial_bb.min.x) + ", " + std::to_string(initial_bb.min.y) + ", " + std::to_string(initial_bb.min.z) + ") Max(" + std::to_string(initial_bb.max.x) + ", " + std::to_string(initial_bb.max.y) + ", " + std::to_string(initial_bb.max.z) + ")");
-
-    calculate_potential_energy_per_particle(system, config);
-    report_min_pe(system);
 
     double elapsed_seconds = 0.0;
     {
@@ -145,18 +165,6 @@ int main(int argc, char* argv[]) {
 
     Vector3 final_cm = calculate_center_of_mass(system);
     Logger::info("Final CM:   (" + std::to_string(final_cm.x) + ", " + std::to_string(final_cm.y) + ", " + std::to_string(final_cm.z) + ")");
-
-    Vector3 final_p = calculate_total_momentum(system);
-    Logger::info("Final Momentum:   (" + std::to_string(final_p.x) + ", " + std::to_string(final_p.y) + ", " + std::to_string(final_p.z) + ")");
-
-    Vector3 final_l = calculate_total_angular_momentum(system);
-    Logger::info("Final Angular Momentum:   (" + std::to_string(final_l.x) + ", " + std::to_string(final_l.y) + ", " + std::to_string(final_l.z) + ")");
-
-    BoundingBox final_bb = calculate_bounding_box(system);
-    Logger::info("Final Extent:   Min(" + std::to_string(final_bb.min.x) + ", " + std::to_string(final_bb.min.y) + ", " + std::to_string(final_bb.min.z) + ") Max(" + std::to_string(final_bb.max.x) + ", " + std::to_string(final_bb.max.y) + ", " + std::to_string(final_bb.max.z) + ")");
-
-    calculate_potential_energy_per_particle(system, config);
-    report_min_pe(system);
 
     config.summary(elapsed_seconds);
 
