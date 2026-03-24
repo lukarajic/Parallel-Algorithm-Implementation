@@ -177,6 +177,33 @@ struct OctreeNode {
             center_of_mass = center_of_mass * (1.0f / total_mass);
         }
     }
+
+    Vector3 compute_force(int target_idx, const System& system, float G, float softening, float theta) const {
+        if (particle_idx == target_idx) return {0.0f, 0.0f, 0.0f};
+
+        Vector3 pos_target = system.get_pos(target_idx);
+        Vector3 r = center_of_mass - pos_target;
+        float dist_sq = r.length_sq() + softening;
+        float dist = std::sqrt(dist_sq);
+
+        // Barnes-Hut criteria: node size / distance < theta
+        float size = boundary.max.x - boundary.min.x;
+        if (is_leaf() || (size / dist < theta)) {
+            float inv_dist = 1.0f / dist;
+            float inv_dist3 = inv_dist * inv_dist * inv_dist;
+            float f = G * system.mass[target_idx] * total_mass * inv_dist3;
+            return r * f;
+        }
+
+        // Otherwise, recurse into children
+        Vector3 total_f = {0.0f, 0.0f, 0.0f};
+        for (int i = 0; i < 8; ++i) {
+            if (children[i]) {
+                total_f += children[i]->compute_force(target_idx, system, G, softening, theta);
+            }
+        }
+        return total_f;
+    }
 };
 
 struct System {
