@@ -228,6 +228,8 @@ struct Config {
     float dt;
     float G;
     float softening;
+    float theta;
+    bool use_barnes_hut;
 
     void print() const {
         std::cout << "--- Simulation Configuration ---" << std::endl;
@@ -235,7 +237,11 @@ struct Config {
         std::cout << "Steps:      " << num_steps << std::endl;
         std::cout << "Time Step:  " << dt << std::endl;
         std::cout << "G:          " << std::scientific << (double)G << std::endl;
-        std::cout << "Softening:  " << std::scientific << (double)softening << std::defaultfloat << std::endl;
+        std::cout << "Softening:  " << std::scientific << (double)softening << std::endl;
+        std::cout << "Algorithm:  " << (use_barnes_hut ? "Barnes-Hut (O(N log N))" : "Direct Sum (O(N^2))") << std::defaultfloat << std::endl;
+        if (use_barnes_hut) {
+            std::cout << "Theta:      " << theta << std::endl;
+        }
         std::cout << "---------------------------------" << std::endl;
     }
 
