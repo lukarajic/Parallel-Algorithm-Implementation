@@ -52,7 +52,12 @@ void compute_forces_barnes_hut(System& system, const Config& config) {
     for (int i = 0; i < (int)n; ++i) {
         root->insert(i, system, pool);
     }
-    root->update_properties(system);
+    
+    #pragma omp parallel
+    {
+        #pragma omp single
+        root->update_properties(system);
+    }
 
     #pragma omp parallel for
     for (int i = 0; i < (int)n; ++i) {

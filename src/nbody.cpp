@@ -94,7 +94,14 @@ void OctreeNode::update_properties(const System& system) {
 
     for (int i = 0; i < 8; ++i) {
         if (children[i]) {
+            #pragma omp task shared(system)
             children[i]->update_properties(system);
+        }
+    }
+    #pragma omp taskwait
+
+    for (int i = 0; i < 8; ++i) {
+        if (children[i]) {
             total_mass += children[i]->total_mass;
             center_of_mass += children[i]->center_of_mass * children[i]->total_mass;
         }
