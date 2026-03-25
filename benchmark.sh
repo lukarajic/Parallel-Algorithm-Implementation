@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ "$1" == "--clean" ]]; then
+    echo "Cleaning build directory..."
+    rm -rf build
+    exit 0
+fi
+
 # Build the project first
 echo "Building project..."
 mkdir -p build && cd build && cmake .. > /dev/null && make -j > /dev/null
