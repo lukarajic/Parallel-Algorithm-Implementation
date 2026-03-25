@@ -40,15 +40,17 @@ void compute_forces_direct(System& system, const Config& config) {
 }
 
 void compute_forces_barnes_hut(System& system, const Config& config) {
+    static OctreePool pool(config.num_bodies * 20);
+    pool.reset();
+
     BoundingBox boundary = calculate_bounding_box(system);
-    // Slightly expand boundary to ensure all particles are strictly inside
     boundary.min = boundary.min - Vector3(0.1f, 0.1f, 0.1f);
     boundary.max = boundary.max + Vector3(0.1f, 0.1f, 0.1f);
 
-    OctreeNode* root = new OctreeNode(boundary);
+    OctreeNode* root = pool.allocate(boundary);
     const size_t n = system.size();
     for (int i = 0; i < (int)n; ++i) {
-        root->insert(i, system);
+        root->insert(i, system, pool);
     }
     root->update_properties(system);
 
@@ -62,8 +64,6 @@ void compute_forces_barnes_hut(System& system, const Config& config) {
         vel.z += force.z * (config.dt / mi);
         system.set_vel(i, vel);
     }
-
-    delete root;
 }
 
 void compute_forces(System& system, const Config& config) {
@@ -99,9 +99,11 @@ int main(int argc, char* argv[]) {
         false                       // use_barnes_hut
     };
 
+    bool verbose = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--verbose" || arg == "-v") {
+            verbose = true;
             Logger::set_level(LogLevel::DEBUG);
         } else if (arg == "--barnes-hut" || arg == "-bh") {
             config.use_barnes_hut = true;

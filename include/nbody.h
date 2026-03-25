@@ -71,6 +71,7 @@ struct BoundingBox {
 };
 
 struct System;
+struct OctreePool;
 
 struct OctreeNode {
     BoundingBox boundary;
@@ -79,15 +80,35 @@ struct OctreeNode {
     int particle_idx;
     OctreeNode* children[8];
 
+    OctreeNode();
     OctreeNode(const BoundingBox& box);
     ~OctreeNode();
 
+    void reset(const BoundingBox& box);
     bool is_leaf() const;
     int get_octant(const Vector3& pos) const;
     BoundingBox create_child_boundary(int octant) const;
-    void insert(int new_particle_idx, const System& system);
+    void insert(int new_particle_idx, const System& system, OctreePool& pool);
     void update_properties(const System& system);
     Vector3 compute_force(int target_idx, const System& system, float G, float softening, float theta) const;
+};
+
+struct OctreePool {
+    std::vector<OctreeNode> nodes;
+    size_t next_free;
+
+    OctreePool(size_t capacity) : nodes(capacity), next_free(0) {}
+
+    OctreeNode* allocate(const BoundingBox& box) {
+        if (next_free >= nodes.size()) return nullptr;
+        OctreeNode* node = &nodes[next_free++];
+        node->reset(box);
+        return node;
+    }
+
+    void reset() {
+        next_free = 0;
+    }
 };
 
 struct System {

@@ -1,15 +1,26 @@
 #include <cmath>
 #include "nbody.h"
 
+OctreeNode::OctreeNode() 
+    : boundary({{0,0,0}, {0,0,0}}), total_mass(0.0f), center_of_mass(0.0f, 0.0f, 0.0f), particle_idx(-1) {
+    for (int i = 0; i < 8; ++i) children[i] = nullptr;
+}
+
 OctreeNode::OctreeNode(const BoundingBox& box) 
     : boundary(box), total_mass(0.0f), center_of_mass(0.0f, 0.0f, 0.0f), particle_idx(-1) {
     for (int i = 0; i < 8; ++i) children[i] = nullptr;
 }
 
 OctreeNode::~OctreeNode() {
-    for (int i = 0; i < 8; ++i) {
-        if (children[i]) delete children[i];
-    }
+    // No recursive delete, pool manages memory
+}
+
+void OctreeNode::reset(const BoundingBox& box) {
+    boundary = box;
+    total_mass = 0.0f;
+    center_of_mass = {0.0f, 0.0f, 0.0f};
+    particle_idx = -1;
+    for (int i = 0; i < 8; ++i) children[i] = nullptr;
 }
 
 bool OctreeNode::is_leaf() const {
@@ -40,15 +51,15 @@ BoundingBox OctreeNode::create_child_boundary(int octant) const {
     return child_box;
 }
 
-void OctreeNode::insert(int new_particle_idx, const System& system) {
+void OctreeNode::insert(int new_particle_idx, const System& system, OctreePool& pool) {
     Vector3 pos = system.get_pos(new_particle_idx);
 
     if (!is_leaf()) {
         int octant = get_octant(pos);
         if (!children[octant]) {
-            children[octant] = new OctreeNode(create_child_boundary(octant));
+            children[octant] = pool.allocate(create_child_boundary(octant));
         }
-        children[octant]->insert(new_particle_idx, system);
+        children[octant]->insert(new_particle_idx, system, pool);
         return;
     }
 
@@ -61,12 +72,12 @@ void OctreeNode::insert(int new_particle_idx, const System& system) {
     particle_idx = -1;
 
     int oct1 = get_octant(system.get_pos(existing_idx));
-    if (!children[oct1]) children[oct1] = new OctreeNode(create_child_boundary(oct1));
-    children[oct1]->insert(existing_idx, system);
+    if (!children[oct1]) children[oct1] = pool.allocate(create_child_boundary(oct1));
+    children[oct1]->insert(existing_idx, system, pool);
 
     int oct2 = get_octant(pos);
-    if (!children[oct2]) children[oct2] = new OctreeNode(create_child_boundary(oct2));
-    children[oct2]->insert(new_particle_idx, system);
+    if (!children[oct2]) children[oct2] = pool.allocate(create_child_boundary(oct2));
+    children[oct2]->insert(new_particle_idx, system, pool);
 }
 
 void OctreeNode::update_properties(const System& system) {
