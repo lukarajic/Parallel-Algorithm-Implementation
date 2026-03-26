@@ -41,6 +41,10 @@ double calculate_potential_energy(const System& system, const Config& config) {
     return total_pe;
 }
 
+double calculate_total_energy(const System& system, const Config& config) {
+    return calculate_kinetic_energy(system, config) + calculate_potential_energy(system, config);
+}
+
 void calculate_potential_energy_per_particle(System& system, const Config& config) {
     const size_t n = system.size();
 

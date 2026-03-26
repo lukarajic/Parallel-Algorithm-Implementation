@@ -144,9 +144,8 @@ int main(int argc, char* argv[]) {
     config.print();
     std::cout << std::fixed << std::setprecision(10);
 
-    double initial_ke = calculate_kinetic_energy(system, config);
-    double initial_pe = calculate_potential_energy(system, config);
-    Logger::info("Initial Energy: Total=" + std::to_string(initial_ke + initial_pe));
+    double initial_energy = calculate_total_energy(system, config);
+    Logger::info("Initial Total Energy: " + std::to_string(initial_energy));
     
     Vector3 initial_cm = calculate_center_of_mass(system);
     Logger::info("Initial CM: (" + std::to_string(initial_cm.x) + ", " + std::to_string(initial_cm.y) + ", " + std::to_string(initial_cm.z) + ")");
@@ -165,10 +164,9 @@ int main(int argc, char* argv[]) {
         elapsed_seconds = elapsed.count();
     }
 
-    double final_ke = calculate_kinetic_energy(system, config);
-    double final_pe = calculate_potential_energy(system, config);
-    Logger::info("Final Energy:   Total=" + std::to_string(final_ke + final_pe));
-    Logger::info("Energy Drift: " + std::to_string((final_ke + final_pe) - (initial_ke + initial_pe)));
+    double final_energy = calculate_total_energy(system, config);
+    Logger::info("Final Total Energy: " + std::to_string(final_energy));
+    Logger::info("Energy Drift: " + std::to_string(final_energy - initial_energy));
 
     Vector3 final_cm = calculate_center_of_mass(system);
     Logger::info("Final CM:   (" + std::to_string(final_cm.x) + ", " + std::to_string(final_cm.y) + ", " + std::to_string(final_cm.z) + ")");
