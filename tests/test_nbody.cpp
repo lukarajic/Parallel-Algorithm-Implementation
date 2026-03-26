@@ -75,10 +75,40 @@ void test_system_utils() {
     std::cout << "test_system_utils passed!" << std::endl;
 }
 
+void test_energy() {
+    System system(2);
+    Config config = {2, 1, 0.01f, 1.0f, 0.0f, 0.5f, false};
+    
+    // Body 1: At origin, moving at 1m/s in X, mass 1kg
+    system.x[0] = 0.0f; system.y[0] = 0.0f; system.z[0] = 0.0f;
+    system.vx[0] = 1.0f; system.vy[0] = 0.0f; system.vz[0] = 0.0f;
+    system.mass[0] = 1.0f;
+
+    // Body 2: At (1,0,0), stationary, mass 1kg
+    system.x[1] = 1.0f; system.y[1] = 0.0f; system.z[1] = 0.0f;
+    system.vx[1] = 0.0f; system.vy[1] = 0.0f; system.vz[1] = 0.0f;
+    system.mass[1] = 1.0f;
+
+    // KE = 0.5 * 1 * 1^2 + 0.5 * 1 * 0^2 = 0.5
+    // PE = -G * m1 * m2 / dist = -1.0 * 1 * 1 / 1 = -1.0
+    // Total = 0.5 - 1.0 = -0.5
+    
+    double ke = calculate_kinetic_energy(system, config);
+    double pe = calculate_potential_energy(system, config);
+    double total = calculate_total_energy(system, config);
+
+    assert(std::abs(ke - 0.5) < 1e-6);
+    assert(std::abs(pe - (-1.0)) < 1e-6);
+    assert(std::abs(total - (-0.5)) < 1e-6);
+
+    std::cout << "test_energy passed!" << std::endl;
+}
+
 int main() {
     test_vector3_ops();
     test_dist_sq();
     test_system_utils();
+    test_energy();
     std::cout << "All tests passed!" << std::endl;
     return 0;
 }
