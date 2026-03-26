@@ -104,11 +104,39 @@ void test_energy() {
     std::cout << "test_energy passed!" << std::endl;
 }
 
+void test_momentum() {
+    System system(2);
+    
+    // Body 1: Mass 2kg, velocity (1, 2, 3)
+    system.x[0] = 0.0f; system.y[0] = 0.0f; system.z[0] = 0.0f;
+    system.vx[0] = 1.0f; system.vy[0] = 2.0f; system.vz[0] = 3.0f;
+    system.mass[0] = 2.0f;
+
+    // Body 2: Mass 3kg, velocity (-1, 0, 1)
+    system.x[1] = 1.0f; system.y[1] = 0.0f; system.z[1] = 0.0f;
+    system.vx[1] = -1.0f; system.vy[1] = 0.0f; system.vz[1] = 1.0f;
+    system.mass[1] = 3.0f;
+
+    // P = m1*v1 + m2*v2
+    // Px = 2*1 + 3*(-1) = 2 - 3 = -1
+    // Py = 2*2 + 3*0 = 4
+    // Pz = 2*3 + 3*1 = 6 + 3 = 9
+    
+    Vector3 p = calculate_total_momentum(system);
+
+    assert(std::abs(p.x - (-1.0f)) < 1e-6f);
+    assert(std::abs(p.y - 4.0f) < 1e-6f);
+    assert(std::abs(p.z - 9.0f) < 1e-6f);
+
+    std::cout << "test_momentum passed!" << std::endl;
+}
+
 int main() {
     test_vector3_ops();
     test_dist_sq();
     test_system_utils();
     test_energy();
+    test_momentum();
     std::cout << "All tests passed!" << std::endl;
     return 0;
 }
