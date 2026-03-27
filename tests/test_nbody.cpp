@@ -131,12 +131,35 @@ void test_momentum() {
     std::cout << "test_momentum passed!" << std::endl;
 }
 
+void test_angular_momentum() {
+    System system(1);
+    
+    // Body 1: At (1, 0, 0), moving at (0, 1, 0), mass 1kg
+    system.x[0] = 1.0f; system.y[0] = 0.0f; system.z[0] = 0.0f;
+    system.vx[0] = 0.0f; system.vy[0] = 1.0f; system.vz[0] = 0.0f;
+    system.mass[0] = 1.0f;
+
+    // L = r x p = m * (r x v)
+    // Lx = m * (ry*vz - rz*vy) = 1 * (0*0 - 0*1) = 0
+    // Ly = m * (rz*vx - rx*vz) = 1 * (0*0 - 1*0) = 0
+    // Lz = m * (rx*vy - ry*vx) = 1 * (1*1 - 0*0) = 1
+    
+    Vector3 l = calculate_total_angular_momentum(system);
+
+    assert(std::abs(l.x - 0.0f) < 1e-6f);
+    assert(std::abs(l.y - 0.0f) < 1e-6f);
+    assert(std::abs(l.z - 1.0f) < 1e-6f);
+
+    std::cout << "test_angular_momentum passed!" << std::endl;
+}
+
 int main() {
     test_vector3_ops();
     test_dist_sq();
     test_system_utils();
     test_energy();
     test_momentum();
+    test_angular_momentum();
     std::cout << "All tests passed!" << std::endl;
     return 0;
 }
