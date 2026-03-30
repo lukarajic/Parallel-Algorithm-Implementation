@@ -6,6 +6,9 @@
 #include <iostream>
 #include <iomanip>
 
+/**
+ * @brief A simple 3D vector struct for coordinates, velocities, and forces.
+ */
 struct Vector3 {
     float x, y, z;
 
@@ -55,12 +58,9 @@ struct Vector3 {
     }
 };
 
-struct Body {
-    Vector3 position;
-    Vector3 velocity;
-    float mass;
-};
-
+/**
+ * @brief Represents the spatial extent of the simulation system.
+ */
 struct BoundingBox {
     Vector3 min;
     Vector3 max;
@@ -73,6 +73,9 @@ struct BoundingBox {
 struct System;
 struct OctreePool;
 
+/**
+ * @brief A node in the Barnes-Hut spatial Octree.
+ */
 struct OctreeNode {
     BoundingBox boundary;
     float total_mass;
@@ -93,6 +96,9 @@ struct OctreeNode {
     Vector3 compute_force(int target_idx, const System& system, float G, float softening, float theta) const;
 };
 
+/**
+ * @brief A pre-allocated memory pool for OctreeNodes to eliminate heap overhead.
+ */
 struct OctreePool {
     std::vector<OctreeNode> nodes;
     size_t next_free;
@@ -111,6 +117,9 @@ struct OctreePool {
     }
 };
 
+/**
+ * @brief The main simulation system using a Structure of Arrays (SoA) layout.
+ */
 struct System {
     std::vector<float> x, y, z;
     std::vector<float> vx, vy, vz;
@@ -127,6 +136,9 @@ struct System {
     void set_vel(size_t i, const Vector3& v) { vx[i] = v.x; vy[i] = v.y; vz[i] = v.z; }
 };
 
+/**
+ * @brief Simulation configuration and parameters.
+ */
 struct Config {
     int num_bodies;
     int num_steps;
